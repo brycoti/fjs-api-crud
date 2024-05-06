@@ -1,4 +1,5 @@
 //necessari per utilitzar .env
+// npm install mysql2 sequelize express dotenv
 require('dotenv').config();
 
 const express = require('express');
@@ -20,10 +21,14 @@ const PORT = process.env.PORT || 3000;
 
 // creem instancia de sequelize, indicant base de dades
 // en l'exemple: tipus sqlite, desada en memoria (s'esborra cada vegada)
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: ':memory:',
-});
+const sequelize = new Sequelize(
+    'academica', 'root', 'admin',
+    {
+        dialect: 'mysql',
+        host: 'localhost',
+        port: '3308',
+        dialectOptions: { decimalNumbers: true }
+    });
 
 // Definim model d'usuari (exemple, no és imprescindible)
 const Usuari = sequelize.define('Usuari', {
@@ -37,7 +42,7 @@ const Usuari = sequelize.define('Usuari', {
         allowNull: false,
         unique: true,
     },
-});
+}, { timestamps: false });
 
 
 // connectem a base de dades i creem un primer usuari
@@ -52,18 +57,16 @@ iniDB();
 //DEFINICIO DE LES RUTES DE LA API
 
 // GET de tots els usuaris
-app.get('/usuaris', async (req, res) => {
+app.get('/__usuaris', async (req, res) => {
     const usuaris = await Usuari.findAll();
     res.json(usuaris);
 });
 
-/* // GET de tots els usuaris con otra manera sin await
 app.get('/usuaris', (req, res) => {
     Usuari.findAll()
-    .then(data => res.json(data))
-    .catch(err => res.json({message: err}))
+        .then(data => res.json(data))
+        .catch(err => res.json({ error: err }))
 });
-*/ 
 
 // POST de un usuari (CREAR)
 // important! per fer el POST caldrà establir el paràmetre Content-Type=application/json
